@@ -67,7 +67,7 @@ namespace Escola.API.Controllers
             {
                 return NotFound("Matrícula não encontrada.");
             }
-            return Ok(new { Message = "Matrícula excluída com sucesso." });
+            return Ok(new { message = "Matrícula excluída com sucesso." });
         }
     }
 }
