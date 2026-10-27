@@ -69,7 +69,7 @@ namespace Escola.API.Controllers
             {
                 return NotFound("Curso não encontrado.");
             }
-            return Ok(new { Message = "Curso deletado com sucesso." });
+            return Ok(new { message = "Curso deletado com sucesso." });
         }
     }
 }
