@@ -1,5 +1,6 @@
 ﻿using Escola.Application.DTOs.Curso;
 using Escola.Application.DTOs.Turma;
+using Escola.Application.Exceptions;
 using Escola.Application.Interfaces;
 using Escola.Domain.Entities;
 using Escola.Domain.Interfaces;
@@ -38,7 +39,7 @@ namespace Escola.Application.Services
 
             if(deleteCurso == null)
             {
-                return null;
+                throw new NotFoundException($"Curso com ID {id} não encontrado.");
             }
 
             return new CursoGetDTO
@@ -74,7 +75,7 @@ namespace Escola.Application.Services
 
             if(curso == null)
             {
-                return null;
+                throw new NotFoundException($"Curso com ID {id} não encontrado.");
             }
 
             return new CursoGetDTO
@@ -85,25 +86,25 @@ namespace Escola.Application.Services
             };
         }
 
-        public async Task<CursoGetDTO> UpdateAsync(CursoPutDTO curso)
+        public async Task<CursoGetDTO> UpdateAsync(CursoPutDTO cursoPutDTO)
         {
-            var cursoToUpdate = new Curso
-            {
-                Id = curso.Id,
-                Nome = curso.Nome,
-                Descricao = curso.Descricao
-            };
+            var cursoExistente = await _cursoRepository.GetByIdAsync(cursoPutDTO.Id);
 
-            if(cursoToUpdate == null)
+            if(cursoExistente == null)
             {
-                return null;
+                throw new NotFoundException($"Curso com ID {cursoPutDTO.Id} não encontrado.");
             }
+
+            cursoExistente.Nome = cursoPutDTO.Nome;
+            cursoExistente.Descricao = cursoPutDTO.Descricao;
+
+            var cursoAtualizado = await _cursoRepository.UpdateAsync(cursoExistente);
 
             return new CursoGetDTO
             {
-                Id = cursoToUpdate.Id,
-                Nome = cursoToUpdate.Nome,
-                Descricao = cursoToUpdate.Descricao
+                Id = cursoExistente.Id,
+                Nome = cursoExistente.Nome,
+                Descricao = cursoExistente.Descricao
             };
         }
     }

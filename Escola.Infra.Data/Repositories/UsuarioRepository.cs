@@ -9,6 +9,11 @@ namespace Escola.Infra.Data.Repositories
     {
         private readonly Context _context;
 
+        public UsuarioRepository(Context context)
+        {
+            _context = context;
+        }
+
         public async Task<Usuario> AddAsync(Usuario usuario)
         {
             await _context.Usuarios.AddAsync(usuario);
@@ -30,6 +35,13 @@ namespace Escola.Infra.Data.Repositories
             _context.Usuarios.Update(usuario);
             await _context.SaveChangesAsync();
             return usuario;
+        }
+
+        public async Task<bool> ExistsUserAsync()
+        {
+            return await _context.Usuarios
+                .AsNoTracking()
+                .AnyAsync(x => x.Excluido == false);
         }
 
         public async Task<List<Usuario>> GetAllAsync()

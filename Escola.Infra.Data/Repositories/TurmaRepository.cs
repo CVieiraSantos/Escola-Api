@@ -58,7 +58,7 @@ namespace Escola.Infra.Data.Repositories
 
             if (turma == null)
             {
-                throw new Exception("Turma não encontrada");
+                return null;
             }
 
             return turma;
