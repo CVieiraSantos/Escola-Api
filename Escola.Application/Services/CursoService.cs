@@ -1,6 +1,5 @@
 ﻿using Escola.Application.DTOs.Curso;
 using Escola.Application.DTOs.Turma;
-using Escola.Application.Exceptions;
 using Escola.Application.Interfaces;
 using Escola.Domain.Entities;
 using Escola.Domain.Interfaces;
@@ -39,7 +38,7 @@ namespace Escola.Application.Services
 
             if(deleteCurso == null)
             {
-                throw new NotFoundException($"Curso com ID {id} não encontrado.");
+                return null;
             }
 
             return new CursoGetDTO
@@ -75,7 +74,7 @@ namespace Escola.Application.Services
 
             if(curso == null)
             {
-                throw new NotFoundException($"Curso com ID {id} não encontrado.");
+                return null;
             }
 
             return new CursoGetDTO
@@ -86,25 +85,25 @@ namespace Escola.Application.Services
             };
         }
 
-        public async Task<CursoGetDTO> UpdateAsync(CursoPutDTO cursoPutDTO)
+        public async Task<CursoGetDTO> UpdateAsync(CursoPutDTO curso)
         {
-            var cursoExistente = await _cursoRepository.GetByIdAsync(cursoPutDTO.Id);
-
-            if(cursoExistente == null)
+            var cursoToUpdate = new Curso
             {
-                throw new NotFoundException($"Curso com ID {cursoPutDTO.Id} não encontrado.");
+                Id = curso.Id,
+                Nome = curso.Nome,
+                Descricao = curso.Descricao
+            };
+
+            if(cursoToUpdate == null)
+            {
+                return null;
             }
-
-            cursoExistente.Nome = cursoPutDTO.Nome;
-            cursoExistente.Descricao = cursoPutDTO.Descricao;
-
-            var cursoAtualizado = await _cursoRepository.UpdateAsync(cursoExistente);
 
             return new CursoGetDTO
             {
-                Id = cursoExistente.Id,
-                Nome = cursoExistente.Nome,
-                Descricao = cursoExistente.Descricao
+                Id = cursoToUpdate.Id,
+                Nome = cursoToUpdate.Nome,
+                Descricao = cursoToUpdate.Descricao
             };
         }
     }

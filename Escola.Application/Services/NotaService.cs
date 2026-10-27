@@ -1,5 +1,4 @@
 ﻿using Escola.Application.DTOs.Nota;
-using Escola.Application.Exceptions;
 using Escola.Application.Interfaces;
 using Escola.Domain.Entities;
 using Escola.Domain.Interfaces;
@@ -9,19 +8,14 @@ namespace Escola.Application.Services
     public class NotaService : INotaService
     {
         private readonly INotaRepository _notaRepository;
-        private readonly IMatriculaRepository _matriculaRepository;
 
-        public NotaService(INotaRepository notaRepository, IMatriculaRepository matriculaRepository)
+        public NotaService(INotaRepository notaRepository)
         {
             _notaRepository = notaRepository;
-            _matriculaRepository = matriculaRepository;
         }
 
         public async Task<NotaGetDTO> AddAsync(NotaPostDTO notaPostDTO)
         {
-            if (await _matriculaRepository.GetByIdAsync(notaPostDTO.MatriculaId) == null)
-                throw new NotFoundException($"Matrícula com ID {notaPostDTO.MatriculaId} não encontrada.");
-
             var nota = new Nota
             {
                 MatriculaId = notaPostDTO.MatriculaId,
@@ -48,9 +42,9 @@ namespace Escola.Application.Services
 
             if(notaDeletada == null)
             {
-                throw new NotFoundException($"Nota com ID {id} não encontrada.");
+                return null;
             }
-            
+
             return new NotaGetDTO
             {
                 Id = notaDeletada.Id,
@@ -86,7 +80,7 @@ namespace Escola.Application.Services
 
             if(nota == null)
             {
-                throw new NotFoundException($"Nota com ID {id} não encontrada.");
+                return null;
             }
 
             return new NotaGetDTO
@@ -105,13 +99,7 @@ namespace Escola.Application.Services
 
             if(nota == null)
             {
-                throw new NotFoundException($"Nota com ID {notaPutDTO.Id} não encontrada.");
-            }
-
-            if(notaPutDTO.MatriculaId != nota.MatriculaId)
-            {
-                if (await _matriculaRepository.GetByIdAsync(notaPutDTO.MatriculaId) == null)
-                    throw new NotFoundException($"Matrícula com ID {notaPutDTO.MatriculaId} não encontrada.");
+                return null;
             }
 
             nota.MatriculaId = notaPutDTO.MatriculaId;

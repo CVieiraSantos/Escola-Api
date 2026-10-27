@@ -1,6 +1,5 @@
 ﻿using Escola.Application.DTOs.Curso;
 using Escola.Application.DTOs.Turma;
-using Escola.Application.Exceptions;
 using Escola.Application.Interfaces;
 using Escola.Domain.Entities;
 using Escola.Domain.Interfaces;
@@ -24,7 +23,7 @@ namespace Escola.Application.Services
 
             if(curso == null)
             {
-                throw new NotFoundException($"Curso com ID {turmaPostDTO.CursoId} não encontrado.");
+                throw new ArgumentException($"Curso com ID {turmaPostDTO.CursoId} não encontrado.");
             }
 
             var turma = new Turma
@@ -51,7 +50,7 @@ namespace Escola.Application.Services
 
             if(turmaDeletada == null)
             {
-                throw new NotFoundException($"Turma com ID {id} não encontrada.");
+                return null;
             }
 
             return new TurmaGetDTO
@@ -67,7 +66,7 @@ namespace Escola.Application.Services
             var turmas = await _turmaRepository.GetAllAsync();
             var turmaGetDetailDTOs = new List<TurmaGetDetailDTO>();
 
-            if (turmas.Count == 0 || turmas == null)
+            if (turmas.Count == 0)
             {
                 return turmaGetDetailDTOs;
             }
@@ -91,58 +90,42 @@ namespace Escola.Application.Services
 
         public async Task<TurmaGetDetailDTO> GetByIdAsync(int id)
         {
-            var turma = await _turmaRepository.GetByIdAsync(id);
+            var turmas = await _turmaRepository.GetByIdAsync(id);
 
-            if(turma == null)
+            if(turmas == null)
             {
-                throw new NotFoundException($"Turma com ID {id} não encontrada.");
+                return null;
             }
 
             return new TurmaGetDetailDTO
             {
-                Id = turma.Id,
-                Nome = turma.Nome,
-                Descricao = turma.Descricao,
+                Id = turmas.Id,
+                Nome = turmas.Nome,
+                Descricao = turmas.Descricao,
                 Curso = new CursoGetDTO
                 {
-                    Id = turma.Curso.Id,
-                    Nome = turma.Curso.Nome,
-                    Descricao = turma.Curso.Descricao
+                    Id = turmas.Curso.Id,
+                    Nome = turmas.Curso.Nome,
+                    Descricao = turmas.Curso.Descricao
                 }
             };
         }
 
         public async Task<TurmaGetDTO> UpdateAsync(TurmaPutDTO turmaPutDTO)
         {
-            var turmaExistente = await _turmaRepository.GetByIdAsync(turmaPutDTO.Id);
-            if (turmaExistente == null)
+            var turma = new Turma
             {
-                throw new NotFoundException($"Turma com ID {turmaPutDTO.Id} não encontrada.");
-            }
+                Id = turmaPutDTO.Id,
+                Nome = turmaPutDTO.Nome,
+                CursoId = turmaPutDTO.CursoId
+            };
 
-            var curso = await _cursoRepository.GetByIdAsync(turmaPutDTO.CursoId);
-            if (curso == null)
-            {
-                throw new NotFoundException($"Curso com ID {turmaPutDTO.CursoId} não encontrado.");
-            }
-
-            turmaExistente.Id = turmaPutDTO.Id;
-            turmaExistente.Nome = turmaPutDTO.Nome;
-            turmaExistente.Descricao = turmaPutDTO.Descricao;
-            turmaExistente.CursoId = turmaPutDTO.CursoId;
-
-            var turmaAtualizada = await _turmaRepository.UpdateAsync(turmaExistente);
-
-            if(turmaAtualizada == null)
-            {
-                return null;
-            }
+            var turmaAtualizada = await _turmaRepository.UpdateAsync(turma);
 
             return new TurmaGetDTO
             {
                 Id = turmaAtualizada.Id,
                 Nome = turmaAtualizada.Nome,
-                Descricao = turmaAtualizada.Descricao,
                 CursoId = turmaAtualizada.CursoId
             };
         }

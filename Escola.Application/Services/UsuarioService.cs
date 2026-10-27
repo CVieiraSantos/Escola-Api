@@ -22,8 +22,6 @@ namespace Escola.Application.Services
             byte[] passwordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(usuarioPostDTO.Senha));
             byte[] passwordSalt = hmac.Key;
 
-            var existeUsuario = await _usuarioRepository.ExistsUserAsync();
-
             var usuario = new Usuario
             {
                 Nome = usuarioPostDTO.Nome,
@@ -31,7 +29,7 @@ namespace Escola.Application.Services
                 Excluido = false,
                 PasswordHash = passwordHash,
                 PasswordSalt = passwordSalt,
-                Perfil = existeUsuario ? "Aluno" : "Administrador"
+                Perfil = "Aluno"
             };
 
             var createdUsuario = await _usuarioRepository.AddAsync(usuario);
@@ -39,8 +37,7 @@ namespace Escola.Application.Services
             {
                 Id = createdUsuario.Id,
                 Nome = createdUsuario.Nome,
-                Email = createdUsuario.Email,
-                Perfil = createdUsuario.Perfil
+                Email = createdUsuario.Email
             };
         }
 
@@ -57,14 +54,8 @@ namespace Escola.Application.Services
             {
                 Id = usuarioDeletado.Id,
                 Nome = usuarioDeletado.Nome,
-                Email = usuarioDeletado.Email,
-                Perfil = usuarioDeletado.Perfil
+                Email = usuarioDeletado.Email
             };
-        }
-
-        public async Task<bool> ExistsUserAsync()
-        {
-            return await _usuarioRepository.ExistsUserAsync();
         }
 
         public async Task<List<UsuarioGetDTO>> GetAllAsync()
@@ -100,8 +91,7 @@ namespace Escola.Application.Services
             {
                 Id = usuario.Id,
                 Nome = usuario.Nome,
-                Email = usuario.Email,
-                Perfil = usuario.Perfil
+                Email = usuario.Email
             };
         }
 
@@ -124,8 +114,7 @@ namespace Escola.Application.Services
             {
                 Id = usuarioAtualizado.Id,
                 Nome = usuarioAtualizado.Nome,
-                Email = usuarioAtualizado.Email,
-                Perfil = usuarioAtualizado.Perfil
+                Email = usuarioAtualizado.Email
             };
         }
     }
