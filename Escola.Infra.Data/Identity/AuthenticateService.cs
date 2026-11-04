@@ -1,10 +1,12 @@
 ﻿using Escola.Domain.Account;
 using Escola.Domain.Entities;
 using Escola.Infra.Data.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Escola.Infra.Data.Identity
@@ -18,6 +20,30 @@ namespace Escola.Infra.Data.Identity
         {
             _context = context;
             _configuration = configuration;
+        }
+
+        public async Task<bool> AuthenticateAsync(string email, string senha)
+        {
+            var usuario = await _context.Usuarios
+             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && u.Excluido == false);
+            
+            if(usuario == null || usuario.Excluido)
+            {
+                return false;
+            }
+
+            using var hmac = new HMACSHA512(usuario.PasswordSalt);
+            var computerdHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(senha));
+
+            for (int i = 0; i < computerdHash.Length; i++)
+            {
+                if (computerdHash[i] != usuario.PasswordHash[i])
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public string GenerateToken(int id, string email, string role)
@@ -44,14 +70,16 @@ namespace Escola.Infra.Data.Identity
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
-        public Task<Usuario> GetUsuarioByEmail(string email)
+        public async Task<Usuario> GetUsuarioByEmail(string email)
         {
-            throw new NotImplementedException();
+             return await _context.Usuarios
+             .FirstOrDefaultAsync(u => u.Email.ToLower() == email.ToLower() && u.Excluido == false);
         }
 
-        public Task<bool> UserExists(string email)
+        public async Task<bool> UserExists(string email)
         {
-            throw new NotImplementedException();
+            return await _context.Usuarios
+             .AnyAsync(u => u.Email.ToLower() == email.ToLower() && u.Excluido == false);
         }
     }
 }
