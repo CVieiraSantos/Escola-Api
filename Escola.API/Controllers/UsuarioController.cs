@@ -1,6 +1,8 @@
-﻿using Escola.Application.DTOs.Usuario;
+﻿using Escola.API.Models;
+using Escola.Application.DTOs.Usuario;
 using Escola.Application.Interfaces;
 using Escola.Domain.Account;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Escola.API.Controllers
@@ -21,9 +23,42 @@ namespace Escola.API.Controllers
         [HttpPost]
         public async Task<IActionResult> AddAsync(UsuarioPostDTO usuarioPostDTO)
         {
+            var usuarioExistente = await _authenticate.UserExists(usuarioPostDTO.Email);
+            if(usuarioExistente)
+            {
+                return BadRequest(new { message = "Já existe um usuário com este email" });
+            }
             UsuarioGetDTO usuario = await _usuarioService.AddAsync(usuarioPostDTO);
             var token = _authenticate.GenerateToken(usuario.Id, usuario.Email.ToLower(), usuario.Perfil);
             return Ok(new { Nome = usuario.Nome, Token = token });
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> GetTokenUsuario(UserLogin userLogin)
+        {
+            var usuario = await _authenticate.GetUsuarioByEmail(userLogin.Email);
+            if(usuario == null)
+            {
+                return BadRequest(new { message = "Usuário ou senha inválidos" });
+            }
+
+           var usuarioValido =  await _authenticate.AuthenticateAsync(userLogin.Email, userLogin.Senha);
+           
+            if(!usuarioValido)
+            {
+                return BadRequest(new { message = "Usuário ou senha inválidos" });
+            }
+
+            var token = _authenticate.GenerateToken(usuario.Id, usuario.Email.ToLower(), usuario.Perfil);
+            return Ok(new { Nome = usuario.Nome, Token = token });
+        }
+
+        [HttpGet("rota-de-teste")]
+        [Authorize(Roles = "Administrador")] //Somente para usuários autenticados
+        public async Task<IActionResult> GetAllUsuariosTeste()
+        {
+            var usuario = await _usuarioService.GetAllAsync();
+            return Ok(new { Message = "Usuário logado com sucesso." });
         }
     }
 }
