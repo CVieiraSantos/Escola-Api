@@ -1,5 +1,4 @@
 ﻿using Escola.Application.DTOs.Usuario;
-using Escola.Domain.Entities;
 
 namespace Escola.Application.Interfaces
 {
