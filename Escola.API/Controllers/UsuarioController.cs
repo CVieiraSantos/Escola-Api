@@ -2,7 +2,6 @@
 using Escola.Application.DTOs.Usuario;
 using Escola.Application.Interfaces;
 using Escola.Domain.Account;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Escola.API.Controllers
@@ -51,14 +50,6 @@ namespace Escola.API.Controllers
 
             var token = _authenticate.GenerateToken(usuario.Id, usuario.Email.ToLower(), usuario.Perfil);
             return Ok(new { Nome = usuario.Nome, Token = token });
-        }
-
-        [HttpGet("rota-de-teste")]
-        [Authorize(Roles = "Administrador")] //Somente para usuários autenticados
-        public async Task<IActionResult> GetAllUsuariosTeste()
-        {
-            var usuario = await _usuarioService.GetAllAsync();
-            return Ok(new { Message = "Usuário logado com sucesso." });
         }
     }
 }
