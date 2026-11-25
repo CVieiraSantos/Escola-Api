@@ -11,11 +11,13 @@ namespace Escola.Application.Services
     {
         private readonly ITurmaRepository _turmaRepository;
         private readonly ICursoRepository _cursoRepository;
+        private readonly IUsuarioRepository _usuarioRepository;
 
-        public TurmaService(ITurmaRepository turmaRepository, ICursoRepository cursoRepository)
+        public TurmaService(ITurmaRepository turmaRepository, ICursoRepository cursoRepository, IUsuarioRepository usuarioRepository)
         {
             _turmaRepository = turmaRepository ?? throw new ArgumentNullException(nameof(turmaRepository));
             _cursoRepository = cursoRepository ?? throw new ArgumentNullException(nameof(cursoRepository));
+            _usuarioRepository = usuarioRepository ?? throw new ArgumentNullException(nameof(usuarioRepository));
         }
 
         public async Task<TurmaGetDTO> AddAsync(TurmaPostDTO turmaPostDTO)
@@ -110,6 +112,39 @@ namespace Escola.Application.Services
                     Descricao = turma.Curso.Descricao
                 }
             };
+        }
+
+        public async Task<List<TurmaGetDetailDTO>> GetTurmasByUsuario(int idUsuario)
+        {
+            var usuario = await _usuarioRepository.GetByIdAsync(idUsuario);
+
+            if (usuario == null)
+            {
+                throw new NotFoundException($"Usuário com ID {idUsuario} não encontrado.");
+            }
+
+            var turmas = await _turmaRepository.GetTurmasByUsuario(idUsuario);
+            var turmaGetDetailDTOs = new List<TurmaGetDetailDTO>();
+
+            if (turmas.Count == 0 || turmas == null)
+            {
+                return turmaGetDetailDTOs;
+            }
+
+            turmaGetDetailDTOs.AddRange(turmas.Select(turma => new TurmaGetDetailDTO
+            {
+                Id = turma.Id,
+                Nome = turma.Nome,
+                Descricao = turma.Descricao,
+                Curso = new CursoGetDTO
+                {
+                    Id = turma.Curso.Id,
+                    Nome = turma.Curso.Nome,
+                    Descricao = turma.Curso.Descricao
+                }
+            }));
+
+            return turmaGetDetailDTOs;
         }
 
         public async Task<TurmaGetDTO> UpdateAsync(TurmaPutDTO turmaPutDTO)
