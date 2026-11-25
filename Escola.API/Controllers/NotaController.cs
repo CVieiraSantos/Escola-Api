@@ -1,5 +1,7 @@
 ﻿using Escola.Application.DTOs.Nota;
 using Escola.Application.Interfaces;
+using Escola.Infra.Ioc;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Escola.API.Controllers
@@ -16,17 +18,24 @@ namespace Escola.API.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> GetAllNotas()
         {
             var notas = await _notaService.GetAllAsync();
-            if (notas is null || notas.Count == 0)
-            {
-                return NotFound("Nenhuma nota encontrada.");
-            }
-            return Ok();
+            return Ok(notas);
+        }
+
+        [HttpGet("user/{id:int}")]
+        [Authorize(Roles = "Aluno, Administrador")]
+        public async Task<ActionResult> GetAllNotasByTurmaUsuario(int id)
+        {
+            var userId = User.GetUserId();
+            var notas = await _notaService.GetNotasByTurmaUsuario(id, userId);
+            return Ok(notas);
         }
 
         [HttpGet("{id:int}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> GetNotaById(int id)
         {
             var nota = await _notaService.GetByIdAsync(id);
@@ -38,6 +47,7 @@ namespace Escola.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> CreateNota(NotaPostDTO notaPostDTO)
         {
             var nota = await _notaService.AddAsync(notaPostDTO);
@@ -49,6 +59,7 @@ namespace Escola.API.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> UpdateNota(NotaPutDTO notaPutDTO)
         {
             var nota = await _notaService.UpdateAsync(notaPutDTO);
@@ -60,6 +71,7 @@ namespace Escola.API.Controllers
         }
 
         [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<ActionResult> DeleteNota(int id)
         {
             var nota = await _notaService.DeleteAsync(id);
