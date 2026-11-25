@@ -55,6 +55,14 @@ namespace Escola.Infra.Data.Repositories
             return nota;
         }
 
+        public async Task<List<Nota>> GetNotasByTurmaUsuario(int idTurma, int idUsuario)
+        {
+            return await _context.Notas
+                .AsNoTracking()
+                .Where(n=> n.Excluido == false && n.Matricula.TurmaId == idTurma && n.Matricula.UsuarioId == idUsuario)
+                .ToListAsync();
+        }
+
         public async Task<Nota> UpdateAsync(Nota nota)
         {
             var notaExistente = await _context.Notas

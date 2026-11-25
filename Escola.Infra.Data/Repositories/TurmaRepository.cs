@@ -64,6 +64,15 @@ namespace Escola.Infra.Data.Repositories
             return turma;
         }
 
+        public async Task<List<Turma>> GetTurmasByUsuario(int idUsuario)
+        {
+            return await _context.Turmas
+                .AsNoTracking()
+                .Include(x => x.Curso)
+                .Where(x => x.Excluido == false && x.Matriculas.Any(m => m.UsuarioId == idUsuario))
+                .ToListAsync();
+        }
+
         public async Task<Turma> UpdateAsync(Turma turma)
         {
             var turmaExistente = await _context.Turmas
