@@ -27,7 +27,7 @@ namespace Escola.Application.Services
                 MatriculaId = notaPostDTO.MatriculaId,
                 ValorNota = notaPostDTO.ValorNota,
                 Aprovado = notaPostDTO.ValorNota >= 60,
-                DataNota = DateTime.Now
+                DataNota = DateTime.UtcNow
             };
             
             var notaAdicionada = await _notaRepository.AddAsync(nota);
@@ -97,6 +97,31 @@ namespace Escola.Application.Services
                 Aprovado = nota.Aprovado,
                 DataNota = nota.DataNota
             };
+        }
+
+        public async Task<List<NotaGetDTO>> GetNotasByTurmaUsuario(int idTurma, int idUsuario)
+        {
+            var notas = await _notaRepository.GetNotasByTurmaUsuario(idTurma, idUsuario);
+
+            if(notas == null || notas.Count == 0)
+            {
+                throw new NotFoundException($"Nenhuma nota encontrada para a turma com ID {idTurma} e usuário com ID {idUsuario}.");
+            }
+
+            var notasDTO = new List<NotaGetDTO>();
+
+            foreach (var itemNota in notas)
+            {
+                notasDTO.Add(new NotaGetDTO
+                {
+                    Id = itemNota.Id,
+                    MatriculaId = itemNota.MatriculaId,
+                    ValorNota = itemNota.ValorNota,
+                    Aprovado = itemNota.Aprovado,
+                    DataNota = itemNota.DataNota
+                });
+            }
+            return notasDTO;
         }
 
         public async Task<NotaGetDTO> UpdateAsync(NotaPutDTO notaPutDTO)
